@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="LazySpringConfiguration">
+    <option name="priorityPaths">
+      <list>
+        <option value="" />
+      </list>
+    </option>
+    <option name="searchScope">
+      <set>
+        <option value="PRODUCTION" />
+        <option value="TEST" />
+        <option value="LIBRARIES" />
+      </set>
+    </option>
+  </component>
+</project>
