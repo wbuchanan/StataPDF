@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/StataInsheetPDF.iml" filepath="$PROJECT_DIR$/StataInsheetPDF.iml" />
+      <module fileurl="file://$PROJECT_DIR$/StataPDF.iml" filepath="$PROJECT_DIR$/StataPDF.iml" />
     </modules>
   </component>
 </project>
