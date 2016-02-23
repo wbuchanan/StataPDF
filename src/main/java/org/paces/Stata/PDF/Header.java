@@ -26,6 +26,8 @@ public class Header {
 	 */
 	public Header(List<RectangularTextContainer> row) {
 		validNames(row);
+		for(String i : varnames) System.out.println(i);
+		for(String i : rawVarnames) System.out.println(i);
 	}
 
 	/**

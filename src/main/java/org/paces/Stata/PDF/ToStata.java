@@ -1,11 +1,12 @@
 package org.paces.Stata.PDF;
 
 import com.stata.sfi.Data;
-import technology.tabula.RectangularTextContainer;
 import technology.tabula.Table;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Billy Buchanan
@@ -13,54 +14,52 @@ import java.util.List;
  */
 public class ToStata {
 
-	private List<List<String>> data;
-	private Header varnames;
-	private DataTypes type;
+	private Map<Integer, List<String>> data;
 	private List<Integer> varindices;
+	private Integer nvars;
 
-	public ToStata(Table table, DataTypes dattype) {
-		this.varnames = getHeader(table);
-		this.data = parseRows(table, this.varnames.getRawVarnames());
+	public ToStata(List<Table> table) {
+		this.data = parseRows(table);
 		Data.setObsTotal(this.data.size());
-		this.type = dattype;
 		this.varindices = makeStataVars();
+		loadData();
 	}
 
 	private Header getHeader(Table tab) {
 		return new Header(tab.getRows().get(0));
 	}
 
-	private List<List<String>> parseRows(Table table, List<String> variableNames) {
-		List<List<String>> rowData = new ArrayList<>();
-		for (List<RectangularTextContainer> row : table.getRows()) {
-			if (!row.equals(variableNames)) {
-				List<String> cells = new ArrayList<>(row.size());
-				for (RectangularTextContainer tc: row) {
-					String cellString = tc.getText().trim();
+	private Map<Integer, List<String>> parseRows(List<Table> tabs) {
+		Map<Integer, List<String>> rowData = new HashMap<>();
+		Integer id = 0;
+		Integer vars = 0;
+		for(Table table : tabs) {
+			for (Integer rows = 0; rows < table.getRows().size(); rows++) {
+				id++;
+				List<String> record = new ArrayList<>();
+				for(Integer cols = 0; cols < table.getCols().size(); cols++) {
+					if (table.getCols().size() > vars) vars = table.getCols().size();
+
+					String cellString = table.getCell(rows, cols).getText()
+							.trim();
 					if (cellString.matches("[^\\p{Alpha}]+")) {
-						cells.add(cellString.replaceAll("[\\p{Punct}&&[^\\.]]", ""));
+						record.add(cellString.replaceAll("[\\p{Punct}&&[^\\.]]", ""));
 					} else {
-						cells.add(cellString.replaceAll("[\n\t]", " "));
+						record.add(cellString.replaceAll("[\n\t]", " "));
 					}
 				}
-				rowData.add(cells);
+				rowData.put(id, record);
 			}
 		}
+		this.nvars = vars;
 		return rowData;
 	}
 
 	private List<Integer> makeStataVars() {
-		List<String> varnm = this.varnames.getVarNames();
-		List<Boolean> varTypes = this.type.getDataTypes();
 		List<Integer> varidx = new ArrayList<>();
-		for(int i = 0; i < varTypes.size(); i++) {
-			if (varTypes.get(i)) {
-				Data.addVarDouble(varnm.get(i));
-				varidx.add(Data.getVarIndex(varnm.get(i)));
-			} else {
-				Data.addVarStrL(varnm.get(i));
-				varidx.add(Data.getVarIndex(varnm.get(i)));
-			}
+		for(Integer i = 0; i < nvars; i++) {
+			Data.addVarStrL("var" + String.valueOf(i));
+			varidx.add(Data.getVarIndex("var" + String.valueOf(i)));
 		}
 		return varidx;
 	}
@@ -69,12 +68,7 @@ public class ToStata {
 		for(int obs = 0; obs < this.data.size(); obs++) {
 			List<String> row = this.data.get(obs);
 			for (int var = 0; var < row.size(); var++) {
-				if (this.type.getDataTypes().get(var)) {
-					Data.storeNum(this.varindices.get(var), (long) obs + 1,
-							Double.valueOf(row.get(var)));
-				} else {
-					Data.storeStr(this.varindices.get(var), (long) obs + 1, row.get(var));
-				}
+				Data.storeStr(this.varindices.get(var), (long) obs + 1, row.get(var));
 			}
 		}
 	}

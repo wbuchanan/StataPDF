@@ -55,7 +55,11 @@ public class TextChunk extends RectangularTextContainer<TextElement> implements 
         for (TextElement te: this.textElements) {
             sb.append(te.getText());
         }
-        return sb.toString();
+        if (sb.toString().matches("[^\\p{Alpha}]+")) {
+            return sb.toString().replaceAll("[\\p{Punct}&&[^\\.]]", "").trim();
+        } else {
+            return sb.toString().replaceAll("[\n\t]", " ").trim();
+        }
     }
     
     @Override
